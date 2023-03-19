@@ -2,7 +2,7 @@
 import { verify } from '@noble/ed25519';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import bs58 from 'bs58';
-import { FC, useCallback, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import { notify } from "../utils/notifications";
 
 import { Program, AnchorProvider, web3, utils, BN } from "@project-serum/anchor";
@@ -83,28 +83,32 @@ export const Bank: FC = () => {
 
     const withdrawBank = async (publicKey) => {
         try {
-            const anchProvider = getProvider();
-            const program = new Program(idl_object, programID, anchProvider);
-            await program.rpc.withdraw(new BN(0.1 * web3.LAMPORTS_PER_SOL), {
-                accounts: {
-                    bank: publicKey,
-                    user: anchProvider.wallet.publicKey,
-                }
-            });
-            console.log("Withdrew 0.1 sol:" + publicKey);
+          const anchProvider = getProvider();
+          const program = new Program(idl_object, programID, anchProvider);
+          await program.rpc.withdraw(new BN(0.1 * web3.LAMPORTS_PER_SOL), {
+            accounts: {
+              bank: publicKey,
+              user: anchProvider.wallet.publicKey,
+              systemProgram: web3.SystemProgram.programId
+            }
+          });
+         
+          console.log("Withdrew 0.1 sol:" + publicKey);
         } catch (error) {
-            console.error("Error while withdrawing");
+          console.error("Error while withdrawing");
         }
-    }
+      };
+      
+    
 
     return (
         <>
             {banks.map((bank) => {
                 return (
                     <div className="md:hero-content flex flex-col">
-                        <h1>{bank.name.toString()}</h1>
-                        <span>{bank.balance.toString()}</span>
-                        <span>{bank.owner.toString()}</span>
+                        <h1>{"Bank Name: " + bank.name.toString()}</h1>
+                        <span>{"Bank Balance: " + bank.balance.toString()}</span>
+                        <span>{"Owner: " + bank.owner.toString()}</span>
 
                         <button
                             className="group w-60 m-2 btn animate-pulse bg-gradient-to-br from-indigo-500 to-fuchsia-500 hover:from-white hover:to-purple-300 text-black"
